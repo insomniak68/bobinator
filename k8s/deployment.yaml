@@ -34,10 +34,37 @@ spec:
       labels:
         app: bobinator
     spec:
+      initContainers:
+      - name: clone
+        image: alpine/git:latest
+        command: ["sh", "-c"]
+        args:
+        - |
+          if [ -d /app/.git ]; then
+            cd /app && git pull
+          else
+            git clone https://github.com/insomniak68/bobinator.git /app
+          fi
+        volumeMounts:
+        - name: app
+          mountPath: /app
+      - name: deps
+        image: python:3.12-slim
+        command: ["sh", "-c"]
+        args:
+        - pip install --target=/app/.deps -r /app/requirements.txt
+        volumeMounts:
+        - name: app
+          mountPath: /app
       containers:
       - name: bobinator
-        image: bobinator:latest
-        imagePullPolicy: Never
+        image: python:3.12-slim
+        command: ["sh", "-c"]
+        args:
+        - |
+          export PYTHONPATH=/app/.deps:/app
+          cd /app
+          python -m uvicorn src.main:app --host 0.0.0.0 --port 8000
         ports:
         - containerPort: 8000
         env:
@@ -51,6 +78,8 @@ spec:
         volumeMounts:
         - name: data
           mountPath: /data
+        - name: app
+          mountPath: /app
         resources:
           requests:
             memory: "128Mi"
@@ -62,3 +91,5 @@ spec:
       - name: data
         persistentVolumeClaim:
           claimName: bobinator-data
+      - name: app
+        emptyDir: {}
