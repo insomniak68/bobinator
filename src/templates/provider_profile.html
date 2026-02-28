@@ -9,7 +9,7 @@
             <div>
                 <h1 class="text-3xl font-bold">{{ p.business_name or p.name }}</h1>
                 {% if p.business_name %}<p class="text-gray-500">{{ p.name }}</p>{% endif %}
-                <p class="text-gray-600 mt-1">🔧 {{ p.trade|title }} · 📍 {{ p.city or 'Virginia' }}, VA</p>
+                <p class="text-gray-600 mt-1">🔧 {{ p.trade|title }} · 📍 {{ p.city or '' }}{% if p.city %}, {% endif %}{{ p.state or 'VA' }}</p>
             </div>
         </div>
 

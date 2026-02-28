@@ -13,21 +13,38 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from src.database import get_db, init_db
 from src.auth import hash_password, verify_password, create_session_token, get_provider_id_from_token
-from src.verification.virginia_dpor import lookup_license
-from src.verification.engine import verify_provider
+from src.verification.virginia_dpor import lookup_license as va_lookup
+from src.verification.north_carolina_nclbgc import lookup_license as nc_lookup
+from src.verification.engine import verify_provider, STATE_SCRAPERS
 
 app = FastAPI(title="Bobinator", description="Automated contractor verification platform")
 
 templates = Jinja2Templates(directory=os.path.join(os.path.dirname(__file__), "templates"))
 app.mount("/static", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "static")), name="static")
 
-VIRGINIA_CITIES = [
-    "Alexandria", "Arlington", "Charlottesville", "Chesapeake", "Danville",
-    "Fairfax", "Fredericksburg", "Hampton", "Harrisonburg", "Lynchburg",
-    "Manassas", "Newport News", "Norfolk", "Petersburg", "Portsmouth",
-    "Reston", "Richmond", "Roanoke", "Suffolk", "Virginia Beach", "Williamsburg",
-    "Winchester", "Woodbridge",
-]
+STATES = {
+    "VA": "Virginia",
+    "NC": "North Carolina",
+}
+
+CITIES_BY_STATE = {
+    "VA": [
+        "Alexandria", "Arlington", "Charlottesville", "Chesapeake", "Danville",
+        "Fairfax", "Fredericksburg", "Hampton", "Harrisonburg", "Lynchburg",
+        "Manassas", "Newport News", "Norfolk", "Petersburg", "Portsmouth",
+        "Reston", "Richmond", "Roanoke", "Suffolk", "Virginia Beach", "Williamsburg",
+        "Winchester", "Woodbridge",
+    ],
+    "NC": [
+        "Asheville", "Cary", "Chapel Hill", "Charlotte", "Durham",
+        "Fayetteville", "Gastonia", "Greensboro", "Greenville", "Hickory",
+        "High Point", "Jacksonville", "Raleigh", "Rocky Mount", "Wilmington",
+        "Winston-Salem",
+    ],
+}
+
+# Flat list for backward compat
+ALL_CITIES = sorted(set(c for cities in CITIES_BY_STATE.values() for c in cities))
 
 TRADES = ["painter", "roofer"]
 
@@ -63,7 +80,8 @@ async def index(request: Request):
 @app.get("/register", response_class=HTMLResponse)
 async def register_form(request: Request):
     return templates.TemplateResponse("register.html", {
-        "request": request, "trades": TRADES, "cities": VIRGINIA_CITIES, "error": None,
+        "request": request, "trades": TRADES, "cities_by_state": CITIES_BY_STATE,
+        "states": STATES, "error": None,
         "provider": get_current_provider(request),
     })
 
@@ -73,29 +91,33 @@ async def register(
     request: Request,
     name: str = Form(...), business_name: str = Form(""), email: str = Form(...),
     phone: str = Form(""), trade: str = Form(...), city: str = Form(""),
-    county: str = Form(""), license_number: str = Form(""), password: str = Form(...),
+    county: str = Form(""), state: str = Form("VA"), license_number: str = Form(""),
+    password: str = Form(...),
 ):
     db = get_db()
     try:
         existing = db.execute("SELECT id FROM providers WHERE email = ?", (email,)).fetchone()
         if existing:
             return templates.TemplateResponse("register.html", {
-                "request": request, "trades": TRADES, "cities": VIRGINIA_CITIES,
-                "error": "Email already registered", "provider": None,
+                "request": request, "trades": TRADES, "cities_by_state": CITIES_BY_STATE,
+                "states": STATES, "error": "Email already registered", "provider": None,
             })
+
+        if state not in STATES:
+            state = "VA"
 
         pw_hash = hash_password(password)
         cursor = db.execute("""
             INSERT INTO providers (name, business_name, email, phone, trade, city, county, state, password_hash)
-            VALUES (?, ?, ?, ?, ?, ?, ?, 'VA', ?)
-        """, (name, business_name, email, phone, trade, city, county, pw_hash))
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (name, business_name, email, phone, trade, city, county, state, pw_hash))
         provider_id = cursor.lastrowid
 
         if license_number:
             db.execute("""
                 INSERT INTO licenses (provider_id, license_number, state)
-                VALUES (?, ?, 'VA')
-            """, (provider_id, license_number))
+                VALUES (?, ?, ?)
+            """, (provider_id, license_number, state))
 
         db.commit()
 
@@ -175,7 +197,7 @@ async def trigger_verify(request: Request):
 # ---- Public Directory ----
 
 @app.get("/directory", response_class=HTMLResponse)
-async def directory(request: Request, trade: str = "", city: str = "", verified: str = ""):
+async def directory(request: Request, trade: str = "", city: str = "", state: str = "", verified: str = ""):
     db = get_db()
     try:
         query = """
@@ -191,6 +213,9 @@ async def directory(request: Request, trade: str = "", city: str = "", verified:
         if city:
             query += " AND p.city = ?"
             params.append(city)
+        if state:
+            query += " AND p.state = ?"
+            params.append(state)
         if verified == "yes":
             query += " AND l.status = 'ACTIVE'"
         elif verified == "no":
@@ -200,7 +225,8 @@ async def directory(request: Request, trade: str = "", city: str = "", verified:
         providers = db.execute(query, params).fetchall()
         return templates.TemplateResponse("directory.html", {
             "request": request, "providers": providers, "trades": TRADES,
-            "cities": VIRGINIA_CITIES, "trade": trade, "city": city, "verified": verified,
+            "cities": ALL_CITIES, "states": STATES, "trade": trade, "city": city,
+            "state": state, "verified": verified,
             "provider": get_current_provider(request),
         })
     finally:
@@ -254,9 +280,19 @@ async def admin(request: Request):
 
 # ---- API Endpoints ----
 
+@app.get("/api/license/lookup/{state}/{license_number}")
+async def api_license_lookup(state: str, license_number: str):
+    state = state.upper()
+    scraper = STATE_SCRAPERS.get(state)
+    if not scraper:
+        return {"success": False, "error": f"Unsupported state: {state}"}
+    return scraper(license_number)
+
+
+# Keep old endpoint for backward compat
 @app.get("/api/dpor/lookup/{license_number}")
 async def api_dpor_lookup(license_number: str):
-    return lookup_license(license_number)
+    return va_lookup(license_number)
 
 
 if __name__ == "__main__":

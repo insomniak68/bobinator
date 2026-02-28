@@ -1,32 +1,74 @@
 # Bobinator Trade Definitions
 
+states:
+  VA:
+    name: Virginia
+    board: Department of Professional and Occupational Regulation (DPOR)
+    portal: https://dporweb.dpor.virginia.gov/LicenseLookup
+    licensing_threshold: 1000  # $1,000+ requires Class C or higher
+    thresholds:
+      class_c: 1000      # $1,000 - $10,000
+      class_b: 10000     # $10,000 - $120,000
+      class_a: 120000    # $120,000+
+  NC:
+    name: North Carolina
+    board: NC Licensing Board for General Contractors (NCLBGC)
+    portal: https://portal.nclbgc.org/Public/Search
+    licensing_threshold: 40000  # $40,000+ requires license
+    limitations:
+      limited: 500000     # Up to $500,000
+      intermediate: 1000000  # Up to $1,000,000
+      unlimited: null     # No limit
+
 phase_1:
   painter:
     name: Painter
-    board: Board for Contractors
-    verification: dpor_contractor
-    license_prefix: "2705"
     description: "Interior/exterior painting contractors"
+    states:
+      VA:
+        board: Board for Contractors
+        verification: dpor_contractor
+        license_prefix: "2705"
+      NC:
+        board: NCLBGC
+        verification: nclbgc
+        classification: Building
   roofer:
     name: Roofer
-    board: Board for Contractors
-    verification: dpor_contractor
-    license_prefix: "2705"
     description: "Roofing contractors"
+    states:
+      VA:
+        board: Board for Contractors
+        verification: dpor_contractor
+        license_prefix: "2705"
+      NC:
+        board: NCLBGC
+        verification: nclbgc
+        classification: "S (Roofing)"
 
 phase_2:
   plumber:
     name: Plumber
-    board: Tradesmen Program
-    verification: dpor_tradesman
     description: "Licensed plumbers (different DPOR board)"
+    states:
+      VA:
+        board: Tradesmen Program
+        verification: dpor_tradesman
   carpenter:
     name: Carpenter
-    board: Board for Contractors
-    verification: dpor_contractor
     description: "Carpentry contractors"
+    states:
+      VA:
+        board: Board for Contractors
+        verification: dpor_contractor
   general_contractor:
     name: General Contractor
-    board: Board for Contractors
-    verification: dpor_contractor
     description: "General contracting services"
+    states:
+      VA:
+        board: Board for Contractors
+        verification: dpor_contractor
+      NC:
+        board: NCLBGC
+        verification: nclbgc
+        classification: Building

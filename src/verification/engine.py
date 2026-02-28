@@ -4,21 +4,33 @@ Verification engine - orchestrates credential verification for providers.
 
 import logging
 from datetime import datetime
-from .virginia_dpor import lookup_license
+from .virginia_dpor import lookup_license as va_lookup
+from .north_carolina_nclbgc import lookup_license as nc_lookup
 from ..database import get_db
 
 logger = logging.getLogger(__name__)
 
 
+STATE_SCRAPERS = {
+    "VA": va_lookup,
+    "NC": nc_lookup,
+}
+
+
 def verify_license(provider_id: int) -> dict:
-    """Verify a provider's DPOR license and update the database."""
+    """Verify a provider's license using the appropriate state scraper."""
     db = get_db()
     try:
         lic = db.execute("SELECT * FROM licenses WHERE provider_id = ?", (provider_id,)).fetchone()
         if not lic:
             return {"success": False, "error": "No license on file"}
 
-        result = lookup_license(lic["license_number"])
+        state = lic["state"] or "VA"
+        scraper = STATE_SCRAPERS.get(state)
+        if not scraper:
+            return {"success": False, "error": f"No scraper for state: {state}"}
+
+        result = scraper(lic["license_number"])
         now = datetime.utcnow().isoformat()
 
         if result["success"]:

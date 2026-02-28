@@ -5,6 +5,15 @@
 
 <form method="get" class="bg-white rounded-xl p-6 shadow-sm border mb-8 flex flex-wrap gap-4 items-end">
     <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">State</label>
+        <select name="state" class="border rounded-lg px-3 py-2">
+            <option value="">All States</option>
+            {% for code, name in states.items() %}
+            <option value="{{ code }}" {% if code == state %}selected{% endif %}>{{ name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Trade</label>
         <select name="trade" class="border rounded-lg px-3 py-2">
             <option value="">All Trades</option>
@@ -52,7 +61,7 @@
         </div>
         <div class="text-sm text-gray-600 space-y-1">
             <p>🔧 {{ p.trade|title }}</p>
-            {% if p.city %}<p>📍 {{ p.city }}, VA</p>{% endif %}
+            {% if p.city %}<p>📍 {{ p.city }}, {{ p.state or 'VA' }}</p>{% endif %}
             {% if p.license_class %}<p>📋 {{ p.license_class }}</p>{% endif %}
         </div>
     </a>
