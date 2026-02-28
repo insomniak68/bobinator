@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}{{ p.business_name or p.name }}{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <a href="/directory" class="text-blue-600 hover:underline text-sm">&larr; Back to Directory</a>
+
+    <div class="bg-white rounded-xl p-8 shadow-sm border mt-4">
+        <div class="flex items-start justify-between mb-6">
+            <div>
+                <h1 class="text-3xl font-bold">{{ p.business_name or p.name }}</h1>
+                {% if p.business_name %}<p class="text-gray-500">{{ p.name }}</p>{% endif %}
+                <p class="text-gray-600 mt-1">🔧 {{ p.trade|title }} · 📍 {{ p.city or 'Virginia' }}, VA</p>
+            </div>
+        </div>
+
+        <!-- License -->
+        <div class="border-t pt-6 mt-6">
+            <h2 class="text-xl font-semibold mb-4">📋 License Status</h2>
+            {% if license %}
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-sm text-gray-500">License Number</p>
+                    <p class="font-mono font-medium">{{ license.license_number }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Status</p>
+                    {% if license.status == 'ACTIVE' %}
+                        <span class="inline-flex items-center gap-1 bg-green-100 text-green-800 border border-green-300 px-3 py-1 rounded-full text-sm font-medium">✅ ACTIVE</span>
+                    {% elif license.status == 'EXPIRED' %}
+                        <span class="inline-flex items-center gap-1 bg-yellow-100 text-yellow-800 border border-yellow-300 px-3 py-1 rounded-full text-sm font-medium">⚠️ EXPIRED</span>
+                    {% elif license.status %}
+                        <span class="inline-flex items-center gap-1 bg-red-100 text-red-800 border border-red-300 px-3 py-1 rounded-full text-sm font-medium">🚫 {{ license.status }}</span>
+                    {% else %}
+                        <span class="inline-flex items-center gap-1 bg-gray-100 text-gray-600 border border-gray-300 px-3 py-1 rounded-full text-sm font-medium">❓ Not Yet Verified</span>
+                    {% endif %}
+                </div>
+                {% if license.license_class %}
+                <div>
+                    <p class="text-sm text-gray-500">Class</p>
+                    <p class="font-medium">{{ license.license_class }}</p>
+                </div>
+                {% endif %}
+                {% if license.expiration_date %}
+                <div>
+                    <p class="text-sm text-gray-500">Expires</p>
+                    <p class="font-medium">{{ license.expiration_date }}</p>
+                </div>
+                {% endif %}
+                {% if license.holder_name %}
+                <div>
+                    <p class="text-sm text-gray-500">Registered Name</p>
+                    <p class="font-medium">{{ license.holder_name }}</p>
+                </div>
+                {% endif %}
+                {% if license.specialties %}
+                <div>
+                    <p class="text-sm text-gray-500">Specialties</p>
+                    <p class="font-medium">{{ license.specialties }}</p>
+                </div>
+                {% endif %}
+                {% if license.last_verified_at %}
+                <div class="col-span-2">
+                    <p class="text-xs text-gray-400">Last verified: {{ license.last_verified_at }}</p>
+                </div>
+                {% endif %}
+            </div>
+            {% else %}
+            <p class="text-gray-400">No license on file.</p>
+            {% endif %}
+        </div>
+
+        <!-- Insurance -->
+        <div class="border-t pt-6 mt-6">
+            <h2 class="text-xl font-semibold mb-4">🛡️ Insurance</h2>
+            {% if insurance %}
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-sm text-gray-500">Carrier</p>
+                    <p class="font-medium">{{ insurance.carrier or 'N/A' }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Expires</p>
+                    <p class="font-medium">{{ insurance.expiration_date or 'N/A' }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Proof Uploaded</p>
+                    <p>{% if insurance.proof_uploaded %}✅ Yes{% else %}❌ No{% endif %}</p>
+                </div>
+            </div>
+            {% else %}
+            <p class="text-gray-400">No insurance information on file.</p>
+            {% endif %}
+        </div>
+
+        <!-- Bond -->
+        <div class="border-t pt-6 mt-6">
+            <h2 class="text-xl font-semibold mb-4">📋 Surety Bond</h2>
+            {% if bond %}
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-sm text-gray-500">Bond Company</p>
+                    <p class="font-medium">{{ bond.bond_company or 'N/A' }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Expires</p>
+                    <p class="font-medium">{{ bond.expiration_date or 'N/A' }}</p>
+                </div>
+            </div>
+            {% else %}
+            <p class="text-gray-400">No bond information on file.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Admin{% endblock %}
+{% block content %}
+<h1 class="text-3xl font-bold mb-6">Admin Panel</h1>
+
+<div class="bg-white rounded-xl shadow-sm border overflow-hidden mb-8">
+    <h3 class="font-semibold text-lg p-6 pb-3">All Providers ({{ providers|length }})</h3>
+    <table class="w-full text-sm">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="px-4 py-2 text-left">ID</th>
+                <th class="px-4 py-2 text-left">Name</th>
+                <th class="px-4 py-2 text-left">Trade</th>
+                <th class="px-4 py-2 text-left">License #</th>
+                <th class="px-4 py-2 text-left">Status</th>
+                <th class="px-4 py-2 text-left">Joined</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for p in providers %}
+        <tr class="border-t hover:bg-gray-50">
+            <td class="px-4 py-2">{{ p.id }}</td>
+            <td class="px-4 py-2"><a href="/provider/{{ p.id }}" class="text-blue-600 hover:underline">{{ p.business_name or p.name }}</a></td>
+            <td class="px-4 py-2">{{ p.trade|title }}</td>
+            <td class="px-4 py-2 font-mono text-xs">{{ p.license_number or '-' }}</td>
+            <td class="px-4 py-2">
+                {% if p.license_status == 'ACTIVE' %}<span class="text-green-600">✅ Active</span>
+                {% elif p.license_status %}<span class="text-red-600">⚠️ {{ p.license_status }}</span>
+                {% else %}<span class="text-gray-400">—</span>{% endif %}
+            </td>
+            <td class="px-4 py-2 text-gray-500">{{ p.created_at }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+    <h3 class="font-semibold text-lg p-6 pb-3">Recent Verification Logs</h3>
+    <table class="w-full text-sm">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="px-4 py-2 text-left">Provider</th>
+                <th class="px-4 py-2 text-left">Type</th>
+                <th class="px-4 py-2 text-left">Result</th>
+                <th class="px-4 py-2 text-left">Details</th>
+                <th class="px-4 py-2 text-left">Date</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for log in logs %}
+        <tr class="border-t">
+            <td class="px-4 py-2">{{ log.provider_name }}</td>
+            <td class="px-4 py-2">{{ log.credential_type }}</td>
+            <td class="px-4 py-2">{{ log.result }}</td>
+            <td class="px-4 py-2 text-gray-500">{{ log.details }}</td>
+            <td class="px-4 py-2 text-gray-500">{{ log.checked_at }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

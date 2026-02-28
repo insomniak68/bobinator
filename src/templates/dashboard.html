@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1 class="text-3xl font-bold mb-2">Welcome, {{ provider.name }}</h1>
+<p class="text-gray-500 mb-8">{{ provider.business_name or '' }} · {{ provider.trade|title }} · {{ provider.city or 'Virginia' }}, VA</p>
+
+<div class="grid md:grid-cols-3 gap-6 mb-8">
+    <!-- License Card -->
+    <div class="bg-white rounded-xl p-6 shadow-sm border">
+        <h3 class="font-semibold text-lg mb-3">📋 License</h3>
+        {% if license %}
+            <p class="font-mono text-sm mb-2">{{ license.license_number }}</p>
+            {% if license.status == 'ACTIVE' %}
+                <span class="inline-flex items-center gap-1 bg-green-100 text-green-800 border border-green-300 px-3 py-1 rounded-full text-sm font-medium">✅ ACTIVE</span>
+            {% elif license.status %}
+                <span class="inline-flex items-center gap-1 bg-red-100 text-red-800 border border-red-300 px-3 py-1 rounded-full text-sm font-medium">⚠️ {{ license.status }}</span>
+            {% else %}
+                <span class="inline-flex items-center gap-1 bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm">Not yet verified</span>
+            {% endif %}
+            {% if license.license_class %}<p class="text-sm text-gray-600 mt-2">{{ license.license_class }}</p>{% endif %}
+            {% if license.expiration_date %}<p class="text-sm text-gray-600">Expires: {{ license.expiration_date }}</p>{% endif %}
+            {% if license.last_verified_at %}<p class="text-xs text-gray-400 mt-2">Checked: {{ license.last_verified_at }}</p>{% endif %}
+        {% else %}
+            <p class="text-gray-400">No license on file</p>
+        {% endif %}
+    </div>
+
+    <!-- Insurance Card -->
+    <div class="bg-white rounded-xl p-6 shadow-sm border">
+        <h3 class="font-semibold text-lg mb-3">🛡️ Insurance</h3>
+        {% if insurance %}
+            <p class="text-sm">{{ insurance.carrier or 'No carrier' }}</p>
+            <p class="text-sm text-gray-600">Expires: {{ insurance.expiration_date or 'N/A' }}</p>
+            <p class="text-sm mt-1">{% if insurance.proof_uploaded %}✅ Proof on file{% else %}❌ No proof{% endif %}</p>
+        {% else %}
+            <p class="text-gray-400">Not set up</p>
+        {% endif %}
+    </div>
+
+    <!-- Bond Card -->
+    <div class="bg-white rounded-xl p-6 shadow-sm border">
+        <h3 class="font-semibold text-lg mb-3">📋 Bond</h3>
+        {% if bond %}
+            <p class="text-sm">{{ bond.bond_company or 'No company' }}</p>
+            <p class="text-sm text-gray-600">Expires: {{ bond.expiration_date or 'N/A' }}</p>
+        {% else %}
+            <p class="text-gray-400">Not set up</p>
+        {% endif %}
+    </div>
+</div>
+
+<form method="post" action="/dashboard/verify" class="mb-8">
+    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+        🔄 Verify My Credentials Now
+    </button>
+</form>
+
+{% if logs %}
+<div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+    <h3 class="font-semibold text-lg p-6 pb-3">Verification History</h3>
+    <table class="w-full text-sm">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="px-6 py-2 text-left">Type</th>
+                <th class="px-6 py-2 text-left">Result</th>
+                <th class="px-6 py-2 text-left">Details</th>
+                <th class="px-6 py-2 text-left">Date</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for log in logs %}
+            <tr class="border-t">
+                <td class="px-6 py-2">{{ log.credential_type }}</td>
+                <td class="px-6 py-2">
+                    {% if log.result == 'verified' %}<span class="text-green-600 font-medium">✅ Verified</span>
+                    {% elif log.result == 'valid' %}<span class="text-green-600">✅ Valid</span>
+                    {% elif log.result == 'expired' %}<span class="text-yellow-600">⚠️ Expired</span>
+                    {% else %}<span class="text-red-600">❌ {{ log.result }}</span>{% endif %}
+                </td>
+                <td class="px-6 py-2 text-gray-500">{{ log.details }}</td>
+                <td class="px-6 py-2 text-gray-500">{{ log.checked_at }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<p class="mt-4 text-sm text-gray-400">
+    <a href="/provider/{{ provider.id }}" class="text-blue-600 hover:underline">View your public profile →</a>
+</p>
+{% endblock %}

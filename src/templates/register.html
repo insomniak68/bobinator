@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Register{% endblock %}
+{% block content %}
+<div class="max-w-lg mx-auto">
+    <h1 class="text-3xl font-bold mb-6">Register as a Contractor</h1>
+
+    {% if error %}
+    <div class="bg-red-100 border border-red-300 text-red-800 px-4 py-3 rounded-lg mb-4">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" class="bg-white rounded-xl p-8 shadow-sm border space-y-4">
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+            <input name="name" required class="w-full border rounded-lg px-3 py-2">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Business Name</label>
+            <input name="business_name" class="w-full border rounded-lg px-3 py-2">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+            <input name="email" type="email" required class="w-full border rounded-lg px-3 py-2">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+            <input name="phone" class="w-full border rounded-lg px-3 py-2">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Trade *</label>
+            <select name="trade" required class="w-full border rounded-lg px-3 py-2">
+                {% for t in trades %}
+                <option value="{{ t }}">{{ t|title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">City</label>
+                <select name="city" class="w-full border rounded-lg px-3 py-2">
+                    <option value="">Select...</option>
+                    {% for c in cities %}
+                    <option value="{{ c }}">{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">County</label>
+                <input name="county" class="w-full border rounded-lg px-3 py-2">
+            </div>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">VA DPOR License Number</label>
+            <input name="license_number" class="w-full border rounded-lg px-3 py-2" placeholder="e.g. 2705081693">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Password *</label>
+            <input name="password" type="password" required class="w-full border rounded-lg px-3 py-2">
+        </div>
+        <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-medium">
+            Create Account
+        </button>
+    </form>
+    <p class="text-center text-gray-500 text-sm mt-4">Already registered? <a href="/login" class="text-blue-600 hover:underline">Login</a></p>
+</div>
+{% endblock %}

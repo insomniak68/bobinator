@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<div class="text-center py-16">
+    <h1 class="text-5xl font-bold text-gray-900 mb-4">Hire Verified Contractors</h1>
+    <p class="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+        Bobinator automatically verifies Virginia contractor licenses, insurance, and bonds
+        through the DPOR database — so you don't have to.
+    </p>
+    <div class="flex gap-4 justify-center">
+        <a href="/directory" class="bg-blue-600 text-white px-8 py-3 rounded-lg text-lg hover:bg-blue-700">
+            Find a Contractor
+        </a>
+        <a href="/register" class="border-2 border-blue-600 text-blue-600 px-8 py-3 rounded-lg text-lg hover:bg-blue-50">
+            I'm a Contractor
+        </a>
+    </div>
+</div>
+
+<div class="grid md:grid-cols-3 gap-8 mt-16">
+    <div class="bg-white rounded-xl p-8 shadow-sm border">
+        <div class="text-4xl mb-4">✅</div>
+        <h3 class="text-xl font-semibold mb-2">License Verification</h3>
+        <p class="text-gray-600">We query Virginia DPOR directly to verify contractor licenses are active, valid, and in good standing.</p>
+    </div>
+    <div class="bg-white rounded-xl p-8 shadow-sm border">
+        <div class="text-4xl mb-4">🛡️</div>
+        <h3 class="text-xl font-semibold mb-2">Insurance Tracking</h3>
+        <p class="text-gray-600">Contractors upload proof of insurance. We track expiration dates and flag when coverage lapses.</p>
+    </div>
+    <div class="bg-white rounded-xl p-8 shadow-sm border">
+        <div class="text-4xl mb-4">📋</div>
+        <h3 class="text-xl font-semibold mb-2">Bond Monitoring</h3>
+        <p class="text-gray-600">Surety bonds are tracked and monitored. Expired bonds are flagged automatically.</p>
+    </div>
+</div>
+
+<div class="mt-16 bg-white rounded-xl p-8 shadow-sm border">
+    <h2 class="text-2xl font-bold mb-4">Currently Covering</h2>
+    <div class="flex gap-4">
+        <span class="bg-blue-100 text-blue-800 px-4 py-2 rounded-full font-medium">🎨 Painters</span>
+        <span class="bg-blue-100 text-blue-800 px-4 py-2 rounded-full font-medium">🏠 Roofers</span>
+        <span class="bg-gray-100 text-gray-400 px-4 py-2 rounded-full">🔧 Plumbers (Coming Soon)</span>
+        <span class="bg-gray-100 text-gray-400 px-4 py-2 rounded-full">🔨 Carpenters (Coming Soon)</span>
+    </div>
+</div>
+{% endblock %}

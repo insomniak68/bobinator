@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Contractor Directory{% endblock %}
+{% block content %}
+<h1 class="text-3xl font-bold mb-6">Contractor Directory</h1>
+
+<form method="get" class="bg-white rounded-xl p-6 shadow-sm border mb-8 flex flex-wrap gap-4 items-end">
+    <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Trade</label>
+        <select name="trade" class="border rounded-lg px-3 py-2">
+            <option value="">All Trades</option>
+            {% for t in trades %}
+            <option value="{{ t }}" {% if t == trade %}selected{% endif %}>{{ t|title }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">City</label>
+        <select name="city" class="border rounded-lg px-3 py-2">
+            <option value="">All Cities</option>
+            {% for c in cities %}
+            <option value="{{ c }}" {% if c == city %}selected{% endif %}>{{ c }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Verified</label>
+        <select name="verified" class="border rounded-lg px-3 py-2">
+            <option value="">Any</option>
+            <option value="yes" {% if verified == 'yes' %}selected{% endif %}>Verified Only</option>
+            <option value="no" {% if verified == 'no' %}selected{% endif %}>Unverified</option>
+        </select>
+    </div>
+    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">Search</button>
+</form>
+
+{% if providers %}
+<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for p in providers %}
+    <a href="/provider/{{ p.id }}" class="bg-white rounded-xl p-6 shadow-sm border hover:shadow-md transition">
+        <div class="flex items-start justify-between mb-3">
+            <div>
+                <h3 class="text-lg font-semibold">{{ p.business_name or p.name }}</h3>
+                <p class="text-gray-500 text-sm">{{ p.name }}</p>
+            </div>
+            {% if p.license_status == 'ACTIVE' %}
+                <span class="inline-flex items-center gap-1 bg-green-100 text-green-800 border border-green-300 px-2 py-1 rounded-full text-xs font-medium">✅ Verified</span>
+            {% elif p.license_status %}
+                <span class="inline-flex items-center gap-1 bg-red-100 text-red-800 border border-red-300 px-2 py-1 rounded-full text-xs font-medium">⚠️ {{ p.license_status }}</span>
+            {% else %}
+                <span class="inline-flex items-center gap-1 bg-gray-100 text-gray-600 border border-gray-300 px-2 py-1 rounded-full text-xs font-medium">❓ Unverified</span>
+            {% endif %}
+        </div>
+        <div class="text-sm text-gray-600 space-y-1">
+            <p>🔧 {{ p.trade|title }}</p>
+            {% if p.city %}<p>📍 {{ p.city }}, VA</p>{% endif %}
+            {% if p.license_class %}<p>📋 {{ p.license_class }}</p>{% endif %}
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-16 text-gray-400">
+    <p class="text-6xl mb-4">🔍</p>
+    <p class="text-xl">No contractors found matching your filters.</p>
+</div>
+{% endif %}
+{% endblock %}
